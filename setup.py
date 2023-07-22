@@ -11,8 +11,8 @@ setup(
     packages=find_packages(),
     py_modules=['Codex'],
     install_requires=[
-        'pandas==2.0.3',
-        'cryptography==41.0.2'
+        'pandas',
+        'cryptography'
     ],
     package_data={
         'INEcodex': [''],
