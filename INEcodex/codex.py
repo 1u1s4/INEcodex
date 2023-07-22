@@ -2,7 +2,7 @@ import pandas as pd
 from cryptography.fernet import Fernet
 from typing import Union
 
-class SecureDF:
+class Codex:
     def __init__(self, key_path: str = 'key.key') -> None:
         self.key_path = key_path
         self.key = None
