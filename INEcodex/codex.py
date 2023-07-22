@@ -1,6 +1,7 @@
 import pandas as pd
 from cryptography.fernet import Fernet
 from typing import Union
+import os
 
 class Codex:
     def __init__(self, key_path: str = 'key.key') -> None:
@@ -21,22 +22,29 @@ class Codex:
         """
         self.key = open(self.key_path, "rb").read()
 
-    def guardar_df(self, df: pd.DataFrame, filename: str, formato: str = 'parquet') -> None:
+    def guardar_df(self, df: pd.DataFrame, filename: str) -> None:
         """
         Guarda el dataframe en varios formatos y lo cifra
         """
+        _, ext = os.path.splitext(filename)
+        formato = ext[1:]  # eliminar el punto
         formato = 'excel' if formato == 'xlsx' else formato
         try:
-            getattr(df, f'to_{formato}')(filename)
+            if formato == 'parquet':
+                df.to_parquet(filename, compression='Brotli')
+            else:
+                getattr(df, f'to_{formato}')(filename)
             self.cifrar(filename)
         except AttributeError:
             raise ValueError(f'Formato no soportado: {formato}')
 
-    def cargar_df(self, filename: str, formato: str = 'parquet') -> pd.DataFrame:
+    def cargar_df(self, filename: str) -> pd.DataFrame:
         """
         Descifra y carga el dataframe desde un archivo
         """
         self.descifrar(filename)
+        _, ext = os.path.splitext(filename)
+        formato = ext[1:]  # eliminar el punto
         formato = 'excel' if formato == 'xlsx' else formato
         try:
             return getattr(pd, f'read_{formato}')(filename)
