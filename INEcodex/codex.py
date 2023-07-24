@@ -1,6 +1,7 @@
 import pandas as pd
 from cryptography.fernet import Fernet
 from typing import Union
+import tempfile
 import os
 
 class Codex:
@@ -40,16 +41,21 @@ class Codex:
 
     def cargar_df(self, filename: str) -> pd.DataFrame:
         """
-        Descifra y carga el dataframe desde un archivo
+        Descifra y carga el dataframe desde un archivo temporal
         """
-        self.descifrar(filename)
-        _, ext = os.path.splitext(filename)
-        formato = ext[1:]  # eliminar el punto
-        formato = 'excel' if formato == 'xlsx' else formato
+        tmp_fd, tmp_path = tempfile.mkstemp(suffix='.csv')
         try:
-            return getattr(pd, f'read_{formato}')(filename)
-        except AttributeError:
-            raise ValueError(f'Formato no soportado: {formato}')
+            self.descifrar(filename, tmp_path)
+            _, ext = os.path.splitext(filename)
+            formato = ext[1:]  # eliminar el punto
+            formato = 'excel' if formato == 'xlsx' else formato
+            try:
+                return getattr(pd, f'read_{formato}')(tmp_path)
+            except AttributeError:
+                raise ValueError(f'Formato no soportado: {formato}')
+        finally:
+            os.close(tmp_fd)
+            os.remove(tmp_path)
 
     def cifrar(self, filename: str) -> None:
         """
@@ -63,14 +69,14 @@ class Codex:
         with open(filename, "wb") as file:
             file.write(encrypted_data)
 
-    def descifrar(self, filename: str) -> None:
+    def descifrar(self, filename: str, output_filename: str) -> None:
         """
         Dado el nombre del archivo (con datos cifrados) y la clave, descifra el contenido
-        del archivo y escribe los datos originales de nuevo en el archivo.
+        del archivo y escribe los datos originales en un nuevo archivo.
         """
         f = Fernet(self.key)
         with open(filename, "rb") as file:
             encrypted_data = file.read()
         decrypted_data = f.decrypt(encrypted_data)
-        with open(filename, "wb") as file:
+        with open(output_filename, "wb") as file:
             file.write(decrypted_data)

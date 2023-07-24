@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 setup(
     name='INEcodex',
-    version='0.1.3',
+    version='0.2',
     author='Luis Alfredo Alvarado Rodríguez',
     description='Codificador de datos del INE',
     long_description='',
