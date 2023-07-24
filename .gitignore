@@ -4,3 +4,4 @@ key.key
 *.csv
 *.xlsx
 *.feather
+__pycache__
